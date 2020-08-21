@@ -1,5 +1,17 @@
 version: '2'
 services:
+  mysql:
+    image: 'docker.io/library/mariadb:10.5'
+    restart: always
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=no
+      - MYSQL_ROOT_PASSWORD=nuuCSIE404
+      - MYSQL_USER=m0724001
+      - MYSQL_PASSWORD=nuuCSIE404
+    volumes:
+      - 'mysql_data:/var/lib/mysql'
+      - './emqx-auth-mysql-init.sql:/docker-entrypoint-initdb.d/emqx-auth-mysql-init.sql'
+
   emqtt:
     image: 'emqx/emqx-edge:v4.1.3'
     restart: always
@@ -82,4 +94,6 @@ volumes:
   vol-emqx-etc:
     driver: local
   vol-emqx-log:
+    driver: local
+  mysql_data:
     driver: local
