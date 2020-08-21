@@ -13,6 +13,8 @@ services:
       - 'mysql_data:/var/lib/mysql'
       # 自動化匯入架構機制 imported by default to the database specified by the MYSQL_DATABASE variable
       - './emqx-auth-mysql-init.sql:/docker-entrypoint-initdb.d/emqx-auth-mysql-init.sql'
+      # 預設MQTT使用者帳號密碼清單
+      - './mqtt_user_list.sql:/docker-entrypoint-initdb.d/mqtt_user_list.sql'
   
   admiral:
     image: adminer
@@ -48,9 +50,9 @@ services:
       - EMQX_LISTENER__WSS__EXTERNAL=8084
       - EMQX_LISTENER__API__MGMT=8080
       - EMQX_MQTT__MAX_PACKET_SIZE=64KB
-      - EMQX_LOADED_PLUGINS="emqx_management,emqx_auth_mysql,emqx_auth_http,emqx_auth_username,emqx_recon,emqx_rule_engine,emqx_retainer,emqx_dashboard,emqx_web_hook"
+      - EMQX_LOADED_PLUGINS="emqx_management,emqx_auth_mysql,emqx_recon,emqx_rule_engine,emqx_retainer,emqx_dashboard"
       # 連線數量設定
-      - EMQX_LISTENER__WSS__EXTERNAL__MAX_CONNECTIONS=700
+      - EMQX_LISTENER__WSS__EXTERNAL__MAX_CONNECTIONS=100
       # EMQ憑證組態
       - EMQX_LISTENER__SSL__EXTERNAL__KEYFILE=/certs/emqx.rpi.mlc.app.key
       - EMQX_LISTENER__SSL__EXTERNAL__CERTFILE=/certs/emqx.rpi.mlc.app.crt
@@ -66,7 +68,9 @@ services:
       - EMQX_AUTH__MYSQL__PASSWORD=happy
       - EMQX_AUTH__MYSQL__DATABASE=mqtt
       - EMQX_AUTH__MYSQL__QUERY_TIMEOUT=30s
-      - EMQX_AUTH__MYSQL__password_hash=plain
+      - "EMQX_AUTH__MYSQL__AUTH_QUERY=SELECT password, salt FROM mqtt_user WHERE username = '%u'"
+      # EMQ emqx_auth_mysql 使用者密碼均為sha256(salt+密碼)後的結果
+      - EMQX_AUTH__MYSQL__PASSWORD_HASH=salt,sha256
       # EMQ WEBHOOK組態
       - EMQX_WEB__HOOK__API__URL=http://emqtt:8080
       # EMQ emqx_auth_http(http認證組態)
