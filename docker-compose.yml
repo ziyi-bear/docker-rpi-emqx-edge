@@ -37,11 +37,11 @@ services:
       - EMQX_DASHBOARD__DEFAULT_USER__PASSWORD=nuuCSIE404
       # EMQ設定組態
       - EMQX_WAIT_TIME=5
-      - EMQ_NAME="emqx-smarthome1"
-      - EMQ_HOST="mqtt.happy.mlc.app"
+      - EMQ_NAME="smarthome-edge"
+      - EMQ_HOST="emqtt"
       - PLATFORM_ETC_DIR=/opt/emqx/etc
       - PLATFORM_LOG_DIR=/opt/emqx/log
-      - EMQX_NODE__NAME=emqx-smarthome1@mqtt.happy.mlc.app
+      - EMQX_NODE__NAME=smarthome-edge@emqtt
       - EMQX_LOG__CONSOLE=console
       - EMQX_ALLOW_ANONYMOUS=false
       - EMQ_LISTENER__TCP__EXTERNAL=1883
@@ -71,6 +71,15 @@ services:
       - "EMQX_AUTH__MYSQL__AUTH_QUERY=SELECT password, salt FROM mqtt_user WHERE username = '%u'"
       # EMQ emqx_auth_mysql 使用者密碼均為sha256(salt+密碼)後的結果
       - EMQX_AUTH__MYSQL__PASSWORD_HASH=salt,sha256
+      # EMQ emqx_bridge_mqtt(橋接至第一個MQTT伺服器 nuu.cloud)
+      - EMQX_BRIDGE__MQTT__NUUCLOUD__ADDRESS=120.105.128.223:1883
+      - EMQX_BRIDGE__MQTT__NUUCLOUD__CLIENTID=smarthome_rpi
+      - EMQX_BRIDGE__MQTT__NUUCLOUD__CLEAN_START=true
+      - EMQX_BRIDGE__MQTT__NUUCLOUD__USERNAME=nuu@nuucloud.com
+      - EMQX_BRIDGE__MQTT__NUUCLOUD__PASSWORD=5271e715bf341ddbf72d2b69a0c598c539cc9ece919be8210731ca634bbd29ea
+      - EMQX_BRIDGE__MQTT__NUUCLOUD__SSL=off
+      - EMQX_BRIDGE__MQTT__NUUCLOUD__FORWARDS=#
+      - EMQX_BRIDGE__MQTT__NUUCLOUD__MOUNTPOINT=/smarthome/
       # EMQ WEBHOOK組態
       - EMQX_WEB__HOOK__API__URL=http://emqtt:8080
       # EMQ emqx_auth_http(http認證組態)
@@ -99,6 +108,8 @@ services:
     volumes:
       # 內建有效憑證
       - /home/ubuntu/docker-rpi-reverse-proxy-companion/certs:/certs:rw
+      # 橋接環境設定
+      - ./emqx_bridge_mqtt.conf:/opt/emqx/etc/plugins/emqx_bridge_mqtt.conf:rw
       # 永久儲存空間
       - vol-emqx-data:/opt/emqx/data
       - vol-emqx-etc:/opt/emqx/etc
