@@ -18,6 +18,7 @@ services:
   
   admiral:
     image: adminer
+    restart: always
     ports:
       - 3280:8080
 
